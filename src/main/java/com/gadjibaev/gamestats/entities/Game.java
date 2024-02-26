@@ -1,4 +1,4 @@
-package com.gadjibaev.gamestats.entity;
+package com.gadjibaev.gamestats.entities;
 
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
@@ -6,16 +6,18 @@ import lombok.*;
 
 @Entity
 @Table(name = "games")
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED, force = true)
 public class Game{
    @Id
-   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "games_seq")
+   @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "games_seq")
    @SequenceGenerator(name = "games_seq", allocationSize = 1)
    @Column(name = "id")
    private Integer id;
-   @Nonnull
+
    private String name;
-   @Nonnull
-   private String platform;
+
+   private String platforms;
 }
