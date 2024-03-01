@@ -19,8 +19,11 @@ public class UsersService {
 
     private final Gauge usersCountGauge;
 
-    public UsersService(UsersRepository repository, MeterRegistry meterRegistry){
+    private KafkaMessagingService kafkaMessagingService;
+
+    public UsersService(UsersRepository repository, MeterRegistry meterRegistry, KafkaMessagingService kafkaMessagingService){
         this.repository = repository;
+        this.kafkaMessagingService = kafkaMessagingService;
 
         usersCountGauge =
                 Gauge.builder("users.count", this, UsersService::getUsersCount)
@@ -50,6 +53,8 @@ public class UsersService {
             final var user = repository.save(body);
 
             log.info("Created user: {}", body.getNickname());
+
+            kafkaMessagingService.sendMessage("User with name: " + body.getNickname() + " was create");
 
             usersCountGauge.measure();
 
