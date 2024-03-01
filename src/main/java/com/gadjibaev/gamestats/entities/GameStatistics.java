@@ -18,13 +18,13 @@ public class GameStatistics  {
     @Column(name = "id")
     private Integer id;
 
-    @OneToOne
-    @JoinColumn(name = "profileid", referencedColumnName = "id")
-    private Profile profile;
+    @ManyToOne
+    @JoinColumn(name = "userid", referencedColumnName = "id")
+    private User user;
 
 
     @JoinColumn(name = "gameid", referencedColumnName = "id")
-    @OneToOne
+    @ManyToOne
     private Game game;
 
     private int hours;

@@ -2,12 +2,14 @@ package com.gadjibaev.gamestats.services;
 
 import com.gadjibaev.gamestats.entities.Game;
 import com.gadjibaev.gamestats.repositories.GamesRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 
 @Service
+@Slf4j
 public class GamesService {
 
     private final GamesRepository repository;
@@ -31,19 +33,26 @@ public class GamesService {
 
     public Game saveGame(Game body) throws Exception{
         if (body.getName() != null && body.getPlatforms() != null) {
-            return repository.save(body);
+            final var game = repository.save(body);
+
+            log.info("Created game: {}", body.getName());
+
+            return game;
         } else {
             throw new Exception("'name' or 'platform' field is empty");
         }
     }
 
     public Iterable<Game> saveGames(List<Game> bodies){
-        return repository.saveAll(bodies);
+        final var games = repository.saveAll(bodies);
+
+        log.info("Created games: {}", bodies.stream().map(Game::getName));
+
+        return games;
     }
 
-    public String deleteGame(int id) {
+    public void deleteGame(int id) {
         repository.deleteById(id);
-        return "game with id: " + id + " removed";
     }
 
     public Game updateGame(int id, Game body) throws Exception {

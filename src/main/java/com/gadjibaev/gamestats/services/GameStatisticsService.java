@@ -2,12 +2,13 @@ package com.gadjibaev.gamestats.services;
 
 import com.gadjibaev.gamestats.entities.Game;
 import com.gadjibaev.gamestats.entities.GameStatistics;
-import com.gadjibaev.gamestats.entities.Profile;
+import com.gadjibaev.gamestats.entities.User;
 import com.gadjibaev.gamestats.models.GameStatisticsPostBody;
 import com.gadjibaev.gamestats.models.GameStatisticsSpendTimePostBody;
 import com.gadjibaev.gamestats.repositories.GameStatisticsRepository;
 import com.gadjibaev.gamestats.repositories.GamesRepository;
-import com.gadjibaev.gamestats.repositories.ProfilesRepository;
+import com.gadjibaev.gamestats.repositories.UsersRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,21 +16,22 @@ import java.util.List;
 
 
 @Service
+@Slf4j
 public class GameStatisticsService {
 
     private final GameStatisticsRepository gameStatisticsRepository;
 
     private final GamesRepository gamesRepository;
 
-    private final ProfilesRepository profilesRepository;
+    private final UsersRepository usersRepository;
 
-    private final ProfilesService profilesService;
+    private final UsersService profilesService;
 
-    public GameStatisticsService(GameStatisticsRepository gameStatisticsRepository, GamesRepository gamesRepository, ProfilesRepository profilesRepository, ProfilesService profilesService){
+    public GameStatisticsService(GameStatisticsRepository gameStatisticsRepository, GamesRepository gamesRepository, UsersRepository usersRepository, UsersService usersService){
         this.gameStatisticsRepository = gameStatisticsRepository;
         this.gamesRepository = gamesRepository;
-        this.profilesRepository = profilesRepository;
-        this.profilesService = profilesService;
+        this.usersRepository = usersRepository;
+        this.profilesService = usersService;
     }
 
     public Iterable<GameStatistics> getGameStatistics(){
@@ -48,9 +50,9 @@ public class GameStatisticsService {
     public GameStatistics saveGameStatistics(GameStatisticsPostBody body) throws Exception{
         if (body.gameId().isPresent() && body.profileId().isPresent()) {
             final Game existingGame = gamesRepository.findById(body.gameId().get()).orElseThrow(Exception::new);
-            final Profile existingProfile = profilesRepository.findById(body.profileId().get()).orElseThrow(Exception::new);
+            final User existingUser = usersRepository.findById(body.profileId().get()).orElseThrow(Exception::new);
 
-            final GameStatistics gameStatistics = new GameStatistics(null, existingProfile, existingGame, 1);
+            final GameStatistics gameStatistics = new GameStatistics(null, existingUser, existingGame, 1);
 
             return gameStatisticsRepository.save(gameStatistics);
         } else {
@@ -64,9 +66,9 @@ public class GameStatisticsService {
         for (final GameStatisticsPostBody body : bodies) {
             if (body.gameId().isPresent() && body.profileId().isPresent()) {
                 final Game existingGame = gamesRepository.findById(body.gameId().get()).orElseThrow(Exception::new);
-                final Profile existingProfile = profilesRepository.findById(body.profileId().get()).orElseThrow(Exception::new);
+                final User existingUser= usersRepository.findById(body.profileId().get()).orElseThrow(Exception::new);
 
-                final GameStatistics createdGameStatistics = new GameStatistics(null, existingProfile, existingGame, 1);
+                final GameStatistics createdGameStatistics = new GameStatistics(null, existingUser, existingGame, 1);
 
                 gameStatistics.add(createdGameStatistics);
             } else {
@@ -77,29 +79,32 @@ public class GameStatisticsService {
         return gameStatisticsRepository.saveAll(gameStatistics);
     }
 
-    public String deleteGameStatistics(int id) {
+    public void deleteGameStatistics(int id) {
         gameStatisticsRepository.deleteById(id);
-        return "game statistics with id: " + id + " removed";
+
+        log.info("Delete game statistics with id: {}", id);
     }
 
     public void incrementGameSpendTime(GameStatisticsSpendTimePostBody body) throws Exception {
         final GameStatistics existingGameStatistics = gameStatisticsRepository.findById(body.id())
                 .orElseThrow(Exception::new);
 
-        final Profile existingProfile = profilesRepository.findById(existingGameStatistics.getProfile().getId())
+        final User existingUser = usersRepository.findById(existingGameStatistics.getUser().getId())
                 .orElseThrow(Exception::new);
 
         existingGameStatistics.setHours(existingGameStatistics.getHours() + body.hours());
 
         gameStatisticsRepository.save(existingGameStatistics);
 
-        final int currentLevel = existingProfile.getLevel();
+        final int currentLevel = existingUser.getLevel();
         final int currentGameSpendTime = existingGameStatistics.getHours();
 
         final int actualLevel = currentGameSpendTime / 10;
 
         if(actualLevel != currentLevel){
-            profilesService.incrementLevelById(existingProfile.getId(), actualLevel - currentLevel);
+            profilesService.incrementLevelById(existingUser.getId(), actualLevel - currentLevel);
+
+            log.info("Increment Game Spend Time for user: {} on: {} hours", existingUser.getNickname(), body.hours());
         }
     }
 
@@ -113,8 +118,8 @@ public class GameStatisticsService {
         }
 
         if(body.profileId().isPresent()) {
-            final Profile existingProfile = profilesRepository.findById(body.gameId().get()).orElseThrow(Exception::new);
-            existingGameStatistics.setProfile(existingProfile);
+            final User existingUser = usersRepository.findById(body.gameId().get()).orElseThrow(Exception::new);
+            existingGameStatistics.setUser(existingUser);
         }
 
         if(body.hours().isPresent()){
