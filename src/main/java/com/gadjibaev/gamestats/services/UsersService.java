@@ -2,6 +2,9 @@ package com.gadjibaev.gamestats.services;
 
 import com.gadjibaev.gamestats.entities.User;
 import com.gadjibaev.gamestats.repositories.UsersRepository;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -14,8 +17,19 @@ public class UsersService {
 
     private final UsersRepository repository;
 
-    public UsersService(UsersRepository repository){
+    private final Gauge usersCountGauge;
+
+    public UsersService(UsersRepository repository, MeterRegistry meterRegistry){
         this.repository = repository;
+
+        usersCountGauge =
+                Gauge.builder("users.count", this, UsersService::getUsersCount)
+                        .description("Count of users")
+                        .register(meterRegistry);
+    }
+
+    public Long getUsersCount(){
+        return repository.count();
     }
 
     public Iterable<User> getUsers(){
@@ -37,6 +51,8 @@ public class UsersService {
 
             log.info("Created user: {}", body.getNickname());
 
+            usersCountGauge.measure();
+
             return user;
         } else {
             throw new Exception("'nickname' or 'level' field is empty");
@@ -48,11 +64,15 @@ public class UsersService {
 
         log.info("Created users: {}", users.stream().map(User::getNickname));
 
+        usersCountGauge.measure();
+
         return users;
     }
 
     public void deleteUser(int id) {
         repository.deleteById(id);
+
+        usersCountGauge.measure();
     }
 
     public void incrementLevelById(int id, int increment) throws Exception{
