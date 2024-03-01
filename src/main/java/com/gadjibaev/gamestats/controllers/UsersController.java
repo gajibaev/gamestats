@@ -17,12 +17,12 @@ public class UsersController {
         this.usersService = usersService;
     }
     
-    @GetMapping()
+    @GetMapping("/")
     public ResponseEntity<Iterable<User>> getAll() {
         return new ResponseEntity<>(usersService.getUsers(), HttpStatus.OK);
     }
 
-    @PostMapping(consumes = "application/json")
+    @PostMapping("/")
     ResponseEntity<Object> create(@RequestBody User body) {
         try {
             return new ResponseEntity<>(usersService.saveUser(body), HttpStatus.CREATED);

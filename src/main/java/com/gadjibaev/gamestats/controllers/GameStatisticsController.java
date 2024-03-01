@@ -24,7 +24,7 @@ public class GameStatisticsController {
         return new ResponseEntity<>(gameStatisticsService.getGameStatistics(), HttpStatus.OK);
     }
 
-    @PostMapping(consumes = "application/json")
+    @PostMapping()
     ResponseEntity<Object> create(@RequestBody GameStatisticsPostBody body) {
         try {
             return new ResponseEntity<>(gameStatisticsService.saveGameStatistics(body), HttpStatus.CREATED);
