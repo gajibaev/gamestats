@@ -22,7 +22,7 @@ public class GamesController {
         return new ResponseEntity<>(gamesService.getGames(), HttpStatus.OK);
     }
 
-    @PostMapping(consumes = "application/json")
+    @PostMapping()
     ResponseEntity<Object> create(@RequestBody Game body) {
         try {
             return new ResponseEntity<>(gamesService.saveGame(body), HttpStatus.CREATED);
