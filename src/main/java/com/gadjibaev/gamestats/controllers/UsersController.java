@@ -1,7 +1,7 @@
 package com.gadjibaev.gamestats.controllers;
 
-import com.gadjibaev.gamestats.entities.Profile;
-import com.gadjibaev.gamestats.services.ProfilesService;
+import com.gadjibaev.gamestats.entities.User;
+import com.gadjibaev.gamestats.services.UsersService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,23 +9,23 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(path="/api/profiles", produces="application/json")
 @CrossOrigin(origins="*")
-public class ProfilesController {
+public class UsersController {
 
-    private final ProfilesService profilesService;
+    private final UsersService usersService;
     
-    public ProfilesController(ProfilesService profilesService){
-        this.profilesService = profilesService;
+    public UsersController(UsersService usersService){
+        this.usersService = usersService;
     }
     
     @GetMapping()
-    public ResponseEntity<Iterable<Profile>> getAll() {
-        return new ResponseEntity<>(profilesService.getProfiles(), HttpStatus.OK);
+    public ResponseEntity<Iterable<User>> getAll() {
+        return new ResponseEntity<>(usersService.getUsers(), HttpStatus.OK);
     }
 
     @PostMapping(consumes = "application/json")
-    ResponseEntity<Object> create(@RequestBody Profile body) {
+    ResponseEntity<Object> create(@RequestBody User body) {
         try {
-            return new ResponseEntity<>(profilesService.saveProfile(body), HttpStatus.CREATED);
+            return new ResponseEntity<>(usersService.saveUser(body), HttpStatus.CREATED);
         } catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -34,16 +34,16 @@ public class ProfilesController {
     @GetMapping("/{id}")
     ResponseEntity<Object> getById(@PathVariable Integer id) {
         try{
-            return new ResponseEntity<>(profilesService.getProfileById(id), HttpStatus.OK);
+            return new ResponseEntity<>(usersService.getUserById(id), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }
 
     @PatchMapping("/{id}")
-    ResponseEntity<Object> update(@RequestBody Profile body, @PathVariable Integer id) {
+    ResponseEntity<Object> update(@RequestBody User body, @PathVariable Integer id) {
         try {
-            return new ResponseEntity<>(profilesService.updateProfile(id, body), HttpStatus.OK);
+            return new ResponseEntity<>(usersService.updateUser(id, body), HttpStatus.OK);
         }catch (Exception e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
@@ -51,6 +51,6 @@ public class ProfilesController {
 
     @DeleteMapping("/{id}")
     void delete( @PathVariable Integer id) {
-        profilesService.deleteProfile(id);
+        usersService.deleteUser(id);
     }
 }
