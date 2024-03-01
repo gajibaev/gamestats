@@ -3,12 +3,12 @@ package com.gadjibaev.gamestats.services;
 import com.gadjibaev.gamestats.entities.Game;
 import com.gadjibaev.gamestats.entities.GameStatistics;
 import com.gadjibaev.gamestats.entities.User;
-import com.gadjibaev.gamestats.entities.User;
 import com.gadjibaev.gamestats.models.GameStatisticsPostBody;
 import com.gadjibaev.gamestats.models.GameStatisticsSpendTimePostBody;
 import com.gadjibaev.gamestats.repositories.GameStatisticsRepository;
 import com.gadjibaev.gamestats.repositories.GamesRepository;
 import com.gadjibaev.gamestats.repositories.UsersRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -16,6 +16,7 @@ import java.util.List;
 
 
 @Service
+@Slf4j
 public class GameStatisticsService {
 
     private final GameStatisticsRepository gameStatisticsRepository;
@@ -78,9 +79,10 @@ public class GameStatisticsService {
         return gameStatisticsRepository.saveAll(gameStatistics);
     }
 
-    public String deleteGameStatistics(int id) {
+    public void deleteGameStatistics(int id) {
         gameStatisticsRepository.deleteById(id);
-        return "game statistics with id: " + id + " removed";
+
+        log.info("Delete game statistics with id: {}", id);
     }
 
     public void incrementGameSpendTime(GameStatisticsSpendTimePostBody body) throws Exception {
@@ -101,6 +103,8 @@ public class GameStatisticsService {
 
         if(actualLevel != currentLevel){
             profilesService.incrementLevelById(existingUser.getId(), actualLevel - currentLevel);
+
+            log.info("Increment Game Spend Time for user: {} on: {} hours", existingUser.getNickname(), body.hours());
         }
     }
 

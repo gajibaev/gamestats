@@ -2,12 +2,14 @@ package com.gadjibaev.gamestats.services;
 
 import com.gadjibaev.gamestats.entities.User;
 import com.gadjibaev.gamestats.repositories.UsersRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 
 @Service
+@Slf4j
 public class UsersService {
 
     private final UsersRepository repository;
@@ -31,22 +33,29 @@ public class UsersService {
 
     public User saveUser(User body) throws Exception{
         if (body.getNickname() != null && body.getLevel() != null) {
-            return repository.save(body);
+            final var user = repository.save(body);
+
+            log.info("Created user: {}", body.getNickname());
+
+            return user;
         } else {
             throw new Exception("'nickname' or 'level' field is empty");
         }
     }
 
-    public Iterable<User> saveUsers(List<User> bodies){
-        return repository.saveAll(bodies);
+    public Iterable<User> saveUsers(List<User> bodies){;
+        final var users = repository.saveAll(bodies);
+
+        log.info("Created users: {}", users.stream().map(User::getNickname));
+
+        return users;
     }
 
-    public String deleteUser(int id) {
+    public void deleteUser(int id) {
         repository.deleteById(id);
-        return "profile with id: " + id + " removed";
     }
 
-    public User incrementLevelById(int id, int increment) throws Exception{
+    public void incrementLevelById(int id, int increment) throws Exception{
         User existingUser = repository.findById(id)
                 .orElseThrow(Exception::new);
 
@@ -54,7 +63,9 @@ public class UsersService {
 
         existingUser.setLevel(currentLevel + increment);
 
-        return repository.save(existingUser);
+        repository.save(existingUser);
+
+        log.info("{} levels were added to the user with id: {}", increment, id);
     }
 
     public User updateUser(int id, User body) throws Exception {
