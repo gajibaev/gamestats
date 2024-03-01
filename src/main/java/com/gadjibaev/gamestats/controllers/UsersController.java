@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(path="/api/profiles", produces="application/json")
+@RequestMapping(path="/api/users", produces="application/json")
 @CrossOrigin(origins="*")
 public class UsersController {
 
